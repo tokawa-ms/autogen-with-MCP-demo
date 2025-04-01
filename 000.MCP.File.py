@@ -7,7 +7,7 @@ from autogen_ext.tools.mcp import StdioServerParams, mcp_server_tools
 from autogen_agentchat.agents import AssistantAgent
 from autogen_core import CancellationToken
 
-# .env ファイルから環境変数を読み込む
+# read environment variables from .env file
 load_dotenv()
 
 model_client = AzureOpenAIChatCompletionClient(
@@ -19,7 +19,11 @@ model_client = AzureOpenAIChatCompletionClient(
 )
 
 
+# main function to run the agent
 async def main() -> None:
+    # Set up the MCP server parameters
+    # mcp/filesystem is a docker image that runs a filesystem server
+    # It mounts the D:/mcpdir directory to /projects/mcpdir in the container
     server_params = StdioServerParams(
         command="docker",
         args=[
@@ -40,11 +44,12 @@ async def main() -> None:
     agent = AssistantAgent(
         name="file_manager",
         model_client=model_client,
-        tools=tools,  # type: ignore
+        tools=tools,
     )
 
-    # The agent can now use any of the filesystem tools
+    # Output of the agents is printed to the console
     print(
+        # The agent can now use any of the filesystem tools
         await agent.run(
             task="Create a file called /projects/mcpdir/test.txt with some content",
             cancellation_token=CancellationToken(),
@@ -52,5 +57,7 @@ async def main() -> None:
     )
 
 
+# must use asyncio.run to run the main function
+# because main() is an async function
 if __name__ == "__main__":
     asyncio.run(main())
